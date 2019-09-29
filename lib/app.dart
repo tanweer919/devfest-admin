@@ -4,8 +4,10 @@ import 'screen/AttendeeScreen.dart';
 import 'package:flutter/services.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'screen/RegisteredUserScreen.dart';
-import 'package:flutter/services.dart';
-
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import './config/config.dart';
 class App extends StatefulWidget {
   @override
   AppState createState() => AppState();
@@ -20,7 +22,6 @@ class AppState extends State<App> {
   ];
   final _bottomNavBarStyle = TextStyle(fontWeight: FontWeight.normal, color: Colors.black,);
   final List<BottomNavigationBarItem> bottomNavigationBarItems = [];
-  String result = 'Hello There';
 
   AppState() {
     bottomNavigationBarItems.addAll([new BottomNavigationBarItem(
@@ -29,12 +30,12 @@ class AppState extends State<App> {
       title: Text('Home', style:_bottomNavBarStyle)
     ),
     BottomNavigationBarItem(
-      activeIcon: Icon(Icons.supervised_user_circle, color: Color(0xFFF3791A)),
-      icon: Icon(Icons.supervised_user_circle, color: Colors.black,),
+      activeIcon: Icon(Icons.account_circle, color: Color(0xFFF3791A)),
+      icon: Icon(Icons.account_circle, color: Colors.black,),
       title: Text('Attendees', style:_bottomNavBarStyle)
     ),
     BottomNavigationBarItem(
-      activeIcon: Icon(Icons.account_circle, color: Color(0xFFF3791A)),
+      activeIcon: Icon(Icons.supervised_user_circle, color: Color(0xFFF3791A)),
       icon: Icon(Icons.supervised_user_circle, color: Colors.black,),
       title: Text('Registered User', style:_bottomNavBarStyle)
     )
@@ -45,44 +46,56 @@ class AppState extends State<App> {
       _currentIndex = index;
     });
   }
+
+  dynamic _checkout(String orderId) async {
+  final response = await http.post('$base_url/checkout', body: {'orderId': orderId});
+  if(response.statusCode == 200) {
+    var parsedJson = json.decode(response.body);
+    String oid =parsedJson['orderId'];
+    String firstName = parsedJson['firstName'];
+    String lastName =parsedJson['lastName'];
+    return 'Checkout successful\nOrderID: $oid\nFull name: $firstName $lastName';
+  } else {
+    var parsedJson = json.decode(response.body);
+    return parsedJson['message'];
+  }
+}
   Future _scanQr(BuildContext context) async {
+    String result;
     try {
       String qrResult = await BarcodeScanner.scan();
-      setState(() {
-        result = qrResult;
-        _showDialog(context, result);
-      });
+      result = await _checkout(qrResult.substring(0,10));
+      if(result[0] != 'C') {
+        _showDialog(context, result, 'Error');
+      }
+      else {
+        _showDialog(context, result, 'Success');
+      }
     } on PlatformException catch(ex) {
       if(ex.code == BarcodeScanner.CameraAccessDenied) {
-        setState(() {
-          result = "Camera access denied";
-          _showDialog(context, result);
-        });
+        result = "Camera access denied";
+        _showDialog(context, result, 'Error');
       } else {
-        setState(() {
-          result = 'Unknown error $ex';
-          _showDialog(context, result);
-        });
+        result = 'Unknown error $ex';
+        _showDialog(context, result, 'Error');
       }
     } on FormatException { 
-      setState(() {
-        result = "You pressed back button before scannig anything";
-        _showDialog(context, result);
-      });
+      result = "You pressed back button before scannig anything";
+      _showDialog(context, result, 'Error');
     } catch(ex) {
       result = "Unknown error $ex";
-      _showDialog(context, result);
+      _showDialog(context, result, 'Error');
     }
   }
 
-  void _showDialog(BuildContext context, String message) {
+  void _showDialog(BuildContext context, String message, String title) {
     // flutter defined function
     showDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text("Alert Dialog title"),
+          title: new Text(title),
           content: new Text(message),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
@@ -115,6 +128,7 @@ class AppState extends State<App> {
         onPressed:() => _scanQr(context),
         icon: Icon(Icons.camera_alt),
         label: Text('Scan'),
+        backgroundColor:Color(0xFFF3791A) ,
       ),
     );
   }

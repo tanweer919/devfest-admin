@@ -25,6 +25,13 @@ dependencies:
   cupertino_icons: ^0.1.2
   barcode_scan: ^1.0.0
   http: any
+  flutter_launcher_icons: any
+  pull_to_refresh: any
+flutter_icons:
+  android: true
+  ios: true
+  image_path_android: "icon/icon.png"
+  image_path_ios: "icon/icon.png"
 
 dev_dependencies:
   flutter_test:

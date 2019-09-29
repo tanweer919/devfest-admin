@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/config.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class HomeScreenState extends State<HomeScreen> {
   String _message = '';
   bool _success = false;
   void getCount() async {
-    String url = 'https://devfest-admin.herokuapp.com/attendee/total';
+    String url = '$base_url/attendee/total';
     var response = await http.get(url);
     if(response.statusCode == 200) {
       var parsedJson =json.decode(response.body);
@@ -40,12 +41,16 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Center(
       child: _success? Card(
-        child: _message == ''?
-          Text('Total Count: $_totalCount\nTotal Checkout: $_totalCheckedOut',
-          style: new TextStyle(fontSize: 16.0, fontWeight: FontWeight.normal),
-        ): Text(_message,
-        style: new TextStyle(fontSize: 16.0, fontWeight: FontWeight.normal),
-      ),
+        elevation: 8,
+        child:Padding(
+          padding: EdgeInsets.all(16.0),
+          child: _message == ''?
+            Text('Total Count: $_totalCount\nTotal Checkout: $_totalCheckedOut',
+            style: new TextStyle(fontSize: 20.0, fontWeight: FontWeight.normal),
+          ): Text(_message,
+          style: new TextStyle(fontSize: 20.0, fontWeight: FontWeight.normal),
+        )
+        ),
       ):CircularProgressIndicator()
     );
   }
