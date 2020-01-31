@@ -16,6 +16,4 @@ Admin app built in flutter DevFest Ranchi 2k19.
 ![Screenshot 2](https://res.cloudinary.com/doy9hqxr1/image/upload/c_scale,w_200/v1569765464/Screenshot_20190929-192344_k9dbwi.png)
 ![Screenshot 3](https://res.cloudinary.com/doy9hqxr1/image/upload/c_scale,w_200/v1569765465/Screenshot_20190929-192351_qlw7re.png)
 
-It needs to change.
-
 
